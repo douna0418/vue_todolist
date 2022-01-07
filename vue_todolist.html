@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>To do list</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.1/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-F3w7mX95PdgyTmZZMECAngseQB83DfGTowi0iMjiWaeVhAn4FJkqJByhZMI3AhiU" crossorigin="anonymous">
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.1/dist/js/bootstrap.bundle.min.js" integrity="sha384-/bQdsTh/da6pkI1MST/rWKFNjaCP5gBSY4sEBT38Q/9RBh9AH40zEOg7Hlq2THRZ" crossorigin="anonymous"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/vue/3.0.5/vue.global.js"></script>
+
+    <style>
+        #app {
+            max-width: 500px;
+            margin: 0 auto;
+        }
+        
+        .completed {
+            text-decoration: line-through
+        }
+    </style>
+</head>
+
+<body>
+    <div id="app">
+        <div class="input-group mb-3">
+            <span class="input-group-text" id="basic-addon1">待辦事項</span>
+            <input type="text" class="form-control" placeholder="準備要做的事" aria-label="newtodo" v-model="newtodo" @keyup.enter="addTodo" aria-describedby="button-addon2">
+            <button class="btn btn-outline-secondary" type="button" id="button-addon2" @click="addTodo">新增</button>
+        </div>
+
+        <div class="card text-center">
+            <div class="card-header">
+                <ul class="nav nav-tabs card-header-tabs">
+                    <li class="nav-item">
+                        <a class="nav-link" href="#" :class="{'active': visibility=='all'}" @click.prevent="visibility = 'all'">全部</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="#" :class="{'active': visibility=='doing'}" @click.prevent="visibility = 'doing'">進行中</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="#" :class="{'active': visibility=='done'}" @click.prevent="visibility = 'done'">已完成</a>
+                    </li>
+                </ul>
+            </div>
+            <div class="card-body">
+                <ul class="list-group">
+                    <li class="list-group-item mb-2" v-for="(item,key) in filteredTodos">
+                        <div class="d-flex">
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" value="" :id="item.id" v-model="item.completed">
+                                <label class="form-check-label" :for="item.id" :class="{'completed': item.completed}">
+                              {{item.title}}
+                            </label>
+                            </div>
+                            <button type="button" class="btn-close ms-auto" aria-label="Close" @click="removeTodo(item)"></button>
+                        </div>
+                    </li>
+                </ul>
+                <div class="d-flex justify-content-between align-items-center">
+                    <p class="card-text m-0">還有{{uncompletedCount}}筆任務未完成</p>
+                    <a href="#" @click.prevent="cleanAll">清除所有任務</a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const App = {
+            data() {
+                return {
+                    newtodo: "",
+                    todos: [
+                        /* 這是資料推進來的模板
+                        {
+                        id: '',
+                        title: '',
+                        completed: false
+                        }, */
+                    ],
+                    visibility: "all",
+                }
+            },
+            methods: {
+                addTodo() {
+                    var value = this.newtodo.trim();
+                    console.log(value);
+                    if (!value) {
+                        return;
+                    }
+                    var timestamp = Math.floor(Date.now());
+                    this.todos.push({
+                        id: timestamp,
+                        title: value,
+                        completed: false
+                    });
+                    this.newtodo = "";
+                },
+                removeTodo(todo) {
+                    var vm = this;
+                    var newIndex = vm.todos.findIndex(function(item, key) {
+                        return todo.id === item.id;
+                    })
+                    this.todos.splice(newIndex, 1);
+                },
+                cleanAll() {
+                    this.todos = [];
+                }
+            },
+            computed: {
+                filteredTodos() {
+                    if (this.visibility == "all") {
+                        return this.todos;
+                    } else if (this.visibility == "doing") {
+                        var anotherTodo = [];
+                        this.todos.forEach(function(item) {
+                            if (!item.completed) {
+                                anotherTodo.push(item);
+                            }
+                        });
+                        return anotherTodo;
+                    } else if (this.visibility == "done") {
+                        var anotherTodo = [];
+                        this.todos.forEach(function(item) {
+                            if (item.completed) {
+                                anotherTodo.push(item);
+                            }
+                        });
+                        return anotherTodo;
+                    }
+                },
+                uncompletedCount: function() {
+                    var uncompletedTodos = this.todos.filter(function(item) {
+                        return item.completed == false;
+                    });
+                    return uncompletedTodos.length;
+                }
+            }
+        }
+
+        Vue.createApp(App).mount('#app');
+    </script>
+</body>
+
+</html>
